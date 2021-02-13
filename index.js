@@ -125,8 +125,8 @@ async function fetchFeedUrl(options, template, lastEventId, invoices) {
   const newLastEventId = sortedEventItems[sortedEventItems.length - 1].id;
   const updatedInvoices = eventItemsToInvoices(sortedEventItems, invoices);
 
-  await setLastEventId(newLastEventId);
   await syncInvoicesToFilesystem(options.invoiceDir, template, invoices);
+  await setLastEventId(newLastEventId);
 
   console.log('data', data);
   return [newLastEventId, updatedInvoices];
