@@ -52,6 +52,8 @@ function eventItemsToInvoices(sortedEventItems, previousInvoices) {
     } else if (item.type === 'INVOICE_DELETED') {
       const index = invoices.findIndex((invoice) => invoice.invoiceId === item.content.invoiceId);
       invoices[index] = { ...invoices[index], status: 'DELETED' };
+    } else {
+      // ignore
     }
   }
   return invoices;
