@@ -16,6 +16,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "commander": "^7.0.0",
+    "html-pdf": "^2.2.0",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {
