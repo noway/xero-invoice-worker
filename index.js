@@ -7,6 +7,12 @@ const fetch = require('node-fetch');
 const pdf = require('html-pdf');
 const Handlebars = require('handlebars');
 const { Command } = require('commander');
+const util = require('util');
+
+const readFile = util.promisify(fs.readFile);
+const writeFile = util.promisify(fs.writeFile);
+const unlink = util.promisify(fs.unlink);
+const wait = util.promisify(setTimeout);
 
 const POLLING_INTERVAL = 7000;
 
@@ -21,6 +27,17 @@ function listInvoices(invoices) {
 }
 function log(...args) {
   console.log(...args);
+}
+
+function writePdf(html, pdfOptions, pdfPath) {
+  return new Promise((resolve, reject) => pdf.create(html, pdfOptions)
+    .toFile(pdfPath, (err, pdfRes) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(pdfRes);
+      }
+    }));
 }
 
 function eventItemsToInvoices(sortedEventItems, previousInvoices) {
@@ -42,50 +59,31 @@ function eventItemsToInvoices(sortedEventItems, previousInvoices) {
 module.exports.eventItemsToInvoices = eventItemsToInvoices;
 
 async function syncInvoicesToFilesystem(invoiceDir, template, invoices) {
-  const deletionPromises = [];
-  const invoicePutPromises = [];
-
   // tries to delete all of the invoices every time... not ideal
   // might delete something which is has been created by user?
+  const deletionPromises = [];
   const deletedInvoices = invoices.filter((invoice) => invoice.status === 'DELETED');
   for (let i = 0; i < deletedInvoices.length; i += 1) {
     const deleteInvoiceNumber = deletedInvoices[i].invoiceNumber;
     const pdfPath = path.resolve(invoiceDir, `./${deleteInvoiceNumber}.pdf`);
-    deletionPromises.push(
-      new Promise((resolve, reject) => fs.unlink(pdfPath, (err) => {
-        if (err) {
-          if (err.code === 'ENOENT') {
-            resolve();
-          } else {
-            reject(err);
-          }
-        } else {
-          resolve();
-        }
-      })),
-    );
+    deletionPromises.push(unlink(pdfPath).catch((err) => {
+      if (err.code !== 'ENOENT') {
+        throw err;
+      }
+    }));
   }
   await Promise.all(deletionPromises);
   log('Deleted invoices:', listInvoices(deletedInvoices));
 
   // overwrites all of the invoices at once. not eficient.
+  const invoicePutPromises = [];
   const nonDeletedInvoices = invoices.filter((invoice) => invoice.status !== 'DELETED');
   for (let i = 0; i < nonDeletedInvoices.length; i += 1) {
     const invoice = nonDeletedInvoices[i];
     const html = template(invoice);
     const pdfOptions = { format: 'Letter' };
     const pdfPath = path.resolve(invoiceDir, `./${invoice.invoiceNumber}.pdf`);
-
-    invoicePutPromises.push(
-      new Promise((resolve, reject) => pdf.create(html, pdfOptions)
-        .toFile(pdfPath, (err, pdfRes) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(pdfRes);
-          }
-        })),
-    );
+    invoicePutPromises.push(writePdf(html, pdfOptions, pdfPath));
   }
   await Promise.all(invoicePutPromises);
   log('Wrote invoices:', listInvoices(nonDeletedInvoices));
@@ -93,13 +91,7 @@ async function syncInvoicesToFilesystem(invoiceDir, template, invoices) {
 
 async function getProgress() {
   try {
-    const contents = await new Promise((resolve, reject) => fs.readFile('./state.json', 'utf8', (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    }));
+    const contents = await readFile('./state.json', 'utf8');
     const parsed = JSON.parse(contents);
     return [parsed.lastEventId, parsed.invoices];
   } catch (error) {
@@ -112,13 +104,7 @@ async function getProgress() {
 
 async function persistProgress(lastEventId, invoices) {
   const serialized = JSON.stringify({ lastEventId, invoices }, null, 2);
-  await new Promise((resolve, reject) => fs.writeFile('./state.json', serialized, (err) => {
-    if (err) {
-      reject();
-    } else {
-      resolve();
-    }
-  }));
+  await writeFile('./state.json', serialized);
 }
 
 async function fetchFeedUrl(options, template, lastEventId, invoices) {
@@ -151,25 +137,19 @@ async function main() {
   log(`  --invoice-dir ${options.invoiceDir}\n`);
 
   let [lastEventId, invoices] = await getProgress();
-
-  const templateSource = await new Promise((resolve, reject) => fs.readFile('./invoice-template.html', 'utf8', (err, data) => {
-    if (err) {
-      reject(err);
-    } else {
-      resolve(data);
-    }
-  }));
-
+  const templateSource = await readFile('./invoice-template.html', 'utf8');
   const template = Handlebars.compile(templateSource);
 
   do {
     [lastEventId, invoices] = await fetchFeedUrl(options, template, lastEventId, invoices);
     await persistProgress(lastEventId, invoices);
     log('Progress persisted\n');
-    await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL));
+
+    await wait(POLLING_INTERVAL);
   }
   while (true); // until Ctrl-C is pressed
 }
+
 if (require.main === module) {
   main();
 }
