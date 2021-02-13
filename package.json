@@ -13,5 +13,8 @@
     "invoice"
   ],
   "author": "Ilia Sidorenko",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "commander": "^7.0.0"
+  }
 }
