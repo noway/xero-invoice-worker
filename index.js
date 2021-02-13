@@ -1,18 +1,14 @@
 /* eslint-disable no-console */
 /* eslint-disable no-constant-condition */
 /* eslint-disable no-await-in-loop */
-const fs = require('fs');
+
 const path = require('path');
 const fetch = require('node-fetch');
-const pdf = require('html-pdf');
 const Handlebars = require('handlebars');
 const { Command } = require('commander');
-const util = require('util');
-
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
-const unlink = util.promisify(fs.unlink);
-const wait = util.promisify(setTimeout);
+const {
+  readFile, writeFile, unlink, wait, listInvoices, log, writePdf,
+} = require('./utils');
 
 const POLLING_INTERVAL = 7000;
 
@@ -21,24 +17,6 @@ program.version('0.0.0');
 program
   .requiredOption('-f, --feed-url <http url>', 'HTTP url for the JSON event feed')
   .requiredOption('-i, --invoice-dir <directory path>', 'Folder where the PDF files are stored');
-
-function listInvoices(invoices) {
-  return invoices.map(({ invoiceNumber }) => invoiceNumber).join(', ');
-}
-function log(...args) {
-  console.log(...args);
-}
-
-function writePdf(html, pdfOptions, pdfPath) {
-  return new Promise((resolve, reject) => pdf.create(html, pdfOptions)
-    .toFile(pdfPath, (err, pdfRes) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(pdfRes);
-      }
-    }));
-}
 
 function eventItemsToInvoices(sortedEventItems, previousInvoices) {
   const invoices = [...previousInvoices];
