@@ -10,7 +10,8 @@ app.get('/invoices/events', (req, res) => {
 
   const invoiceNumber = Math.ceil((afterEventId + 1) / 4);
   const invoiceId = `97f0821d-3517-471a-95f2-${`${invoiceNumber}`.padStart(12, '0')}`;
-  const lineItemId = `2686350b-2656-48a0-912d-${`${invoiceNumber}`.padStart(12, '0')}`;
+  const lineItemId1 = `2686350b-2656-48a0-0001-${`${invoiceNumber}`.padStart(12, '0')}`;
+  const lineItemId2 = `2686350b-2656-48a0-0002-${`${invoiceNumber}`.padStart(12, '0')}`;
 
   if (afterEventId % 4 === 0) {
     // create
@@ -24,11 +25,18 @@ app.get('/invoices/events', (req, res) => {
             invoiceNumber: `INV-${`${invoiceNumber}`.padStart(3, '0')}`,
             lineItems: [
               {
-                lineItemId,
+                lineItemId: lineItemId1,
                 description: 'Supplies',
                 quantity: 2,
                 unitCost: 10.15,
                 lineItemTotalCost: 20.3,
+              },
+              {
+                lineItemId: lineItemId2,
+                description: 'Services',
+                quantity: 10,
+                unitCost: 30,
+                lineItemTotalCost: 300,
               },
             ],
             status: 'DRAFT',
@@ -52,11 +60,18 @@ app.get('/invoices/events', (req, res) => {
             invoiceNumber: `INV-${`${invoiceNumber}`.padStart(3, '0')}`,
             lineItems: [
               {
-                lineItemId,
+                lineItemId: lineItemId1,
                 description: 'Supplies',
                 quantity: 4,
                 unitCost: 10.15,
                 lineItemTotalCost: 40.6,
+              },
+              {
+                lineItemId: lineItemId2,
+                description: 'Services',
+                quantity: 15,
+                unitCost: 30,
+                lineItemTotalCost: 450,
               },
             ],
             status: 'SENT',
@@ -80,11 +95,18 @@ app.get('/invoices/events', (req, res) => {
             invoiceNumber: `INV-${`${invoiceNumber}`.padStart(3, '0')}`,
             lineItems: [
               {
-                lineItemId,
+                lineItemId: lineItemId1,
                 description: 'Supplies',
                 quantity: 4,
                 unitCost: 10.15,
                 lineItemTotalCost: 40.6,
+              },
+              {
+                lineItemId: lineItemId2,
+                description: 'Services',
+                quantity: 15,
+                unitCost: 30,
+                lineItemTotalCost: 450,
               },
             ],
             status: 'PAID',
