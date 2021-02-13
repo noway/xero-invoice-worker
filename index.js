@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 const { Command } = require('commander');
 const fetch = require('node-fetch');
 const fs = require('fs');
@@ -5,6 +6,7 @@ const pdf = require('html-pdf');
 const Handlebars = require('handlebars');
 const path = require('path');
 
+const POLLING_INTERVAL = 7000;
 const program = new Command();
 program.version('0.0.0');
 
@@ -100,8 +102,14 @@ async function main() {
       resolve(data);
     }
   }));
+
   const template = Handlebars.compile(templateSource);
-  fetchFeedUrl(template);
+
+  do {
+    await fetchFeedUrl(template);
+    await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL));
+  }
+  while (true); // until Ctrl-C is pressed
 }
 if (require.main === module) {
   main();
