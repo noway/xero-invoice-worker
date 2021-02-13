@@ -1,0 +1,17 @@
+{
+  "name": "xero-invoice-worker",
+  "version": "0.0.0",
+  "description": "Technical Exercise - Invoice Worker for Xero",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.test.js"
+  },
+  "keywords": [
+    "cli",
+    "xero",
+    "worker",
+    "invoice"
+  ],
+  "author": "Ilia Sidorenko",
+  "license": "UNLICENSED"
+}
