@@ -1,5 +1,5 @@
 const assert = require('assert').strict;
-const { eventItemsToInvoices } = require('./index.js');
+const InvoiceTracker = require('./index.js');
 
 const invoicesEventsOnlyCreate = {
   items: [
@@ -163,7 +163,7 @@ const invoicesEventsCreateMultiple = {
 /** eventItemsToInvoices */
 
 // should create an invoice
-assert.deepEqual(eventItemsToInvoices(invoicesEventsOnlyCreate.items, []), [{
+assert.deepEqual(InvoiceTracker.eventItemsToInvoices(invoicesEventsOnlyCreate.items, []), [{
   invoiceId: '97f0821d-3517-471a-95f2-f00da84ec56e',
   invoiceNumber: 'INV-001',
   lineItems: [
@@ -182,7 +182,7 @@ assert.deepEqual(eventItemsToInvoices(invoicesEventsOnlyCreate.items, []), [{
 }]);
 
 // should create and then update invoice
-assert.deepEqual(eventItemsToInvoices(invoicesEventsCreateThenUpdate.items, []), [{
+assert.deepEqual(InvoiceTracker.eventItemsToInvoices(invoicesEventsCreateThenUpdate.items, []), [{
   invoiceId: '97f0821d-3517-471a-95f2-f00da84ec56e',
   invoiceNumber: 'INV-001',
   lineItems: [
@@ -201,7 +201,7 @@ assert.deepEqual(eventItemsToInvoices(invoicesEventsCreateThenUpdate.items, []),
 }]);
 
 // should create and then delete invoice
-assert.deepEqual(eventItemsToInvoices(invoicesEventsCreateThenDelete.items, []), [{
+assert.deepEqual(InvoiceTracker.eventItemsToInvoices(invoicesEventsCreateThenDelete.items, []), [{
   invoiceId: '97f0821d-3517-471a-95f2-f00da84ec56e',
   invoiceNumber: 'INV-001',
   lineItems: [
@@ -220,7 +220,7 @@ assert.deepEqual(eventItemsToInvoices(invoicesEventsCreateThenDelete.items, []),
 }]);
 
 // should create multiple invoices
-assert.deepEqual(eventItemsToInvoices(invoicesEventsCreateMultiple.items, []), [
+assert.deepEqual(InvoiceTracker.eventItemsToInvoices(invoicesEventsCreateMultiple.items, []), [
   {
     invoiceId: '97f0821d-3517-471a-95f2-f00da84ec56e',
     invoiceNumber: 'INV-001',
