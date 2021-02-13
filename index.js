@@ -14,19 +14,17 @@ program
   .requiredOption('-f, --feed-url <http url>', 'HTTP url for the JSON event feed')
   .requiredOption('-i, --invoice-dir <directory path>', 'Folder where the PDF files are stored');
 
-function eventItemsToInvoices(events, previousInvoices) {
-  // TODO: take in sorted events?
-  const sortedEvents = [...events].sort((a, b) => a.id - b.id);
+function eventItemsToInvoices(sortedEventItems, previousInvoices) {
   const invoices = [...previousInvoices];
-  for (let i = 0; i < sortedEvents.length; i += 1) {
-    const event = sortedEvents[i];
-    if (event.type === 'INVOICE_CREATED') {
-      invoices.push(event.content);
-    } else if (event.type === 'INVOICE_UPDATED') {
-      const index = invoices.findIndex((invoice) => invoice.invoiceId === event.content.invoiceId);
-      invoices[index] = { ...invoices[index], ...event.content };
-    } else if (event.type === 'INVOICE_DELETED') {
-      const index = invoices.findIndex((invoice) => invoice.invoiceId === event.content.invoiceId);
+  for (let i = 0; i < sortedEventItems.length; i += 1) {
+    const item = sortedEventItems[i];
+    if (item.type === 'INVOICE_CREATED') {
+      invoices.push(item.content);
+    } else if (item.type === 'INVOICE_UPDATED') {
+      const index = invoices.findIndex((invoice) => invoice.invoiceId === item.content.invoiceId);
+      invoices[index] = { ...invoices[index], ...item.content };
+    } else if (item.type === 'INVOICE_DELETED') {
+      const index = invoices.findIndex((invoice) => invoice.invoiceId === item.content.invoiceId);
       invoices[index] = { ...invoices[index], status: 'DELETED' };
     }
   }
@@ -122,9 +120,9 @@ async function fetchFeedUrl(options, template, lastEventId, invoices) {
   const res = await fetch(url.href);
   const data = await res.json();
 
-  const sortedEvents = [...data.items].sort((a, b) => a.id - b.id);
-  const newLastEventId = sortedEvents[sortedEvents.length - 1].id;
-  const updatedInvoices = eventItemsToInvoices(data.items, invoices);
+  const sortedEventItems = [...data.items].sort((a, b) => a.id - b.id);
+  const newLastEventId = sortedEventItems[sortedEventItems.length - 1].id;
+  const updatedInvoices = eventItemsToInvoices(sortedEventItems, invoices);
 
   await setLastEventId(newLastEventId);
   await syncInvoicesToFilesystem(options.invoiceDir, template, invoices);
