@@ -15,7 +15,8 @@
   "author": "Ilia Sidorenko",
   "license": "UNLICENSED",
   "dependencies": {
-    "commander": "^7.0.0"
+    "commander": "^7.0.0",
+    "node-fetch": "^2.6.1"
   },
   "devDependencies": {
     "eslint": "^7.20.0",
