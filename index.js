@@ -93,7 +93,6 @@ class InvoiceTracker {
   }
 
   async fetchFeedUrl(lastEventId, invoices) {
-    // TODO: implement pageSize
     try {
       const url = new URL(this.options.feedUrl);
       const searchParams = new URLSearchParams();
