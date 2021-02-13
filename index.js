@@ -19,6 +19,7 @@ if (options.feedUrl) console.log(`- ${options.feedUrl}`);
 if (options.invoiceDir) console.log(`- ${options.invoiceDir}`);
 
 function eventItemsToInvoices(events) {
+  // TODO: sort events by createdAt or by id
   const invoices = [];
   for (let i = 0; i < events.length; i += 1) {
     const event = events[i];
@@ -29,6 +30,7 @@ function eventItemsToInvoices(events) {
   }
   return invoices;
 }
+module.exports.eventItemsToInvoices = eventItemsToInvoices;
 
 async function fetchFeedUrl(template) {
   // TODO: implement pageSize
@@ -68,5 +70,6 @@ async function main() {
   const template = Handlebars.compile(templateSource);
   fetchFeedUrl(template);
 }
-
-main();
+if (require.main === module) {
+  main();
+}
