@@ -5,9 +5,6 @@ const pdf = require('html-pdf');
 const Handlebars = require('handlebars');
 const path = require('path');
 
-const templateSource = fs.readFileSync('./invoice-template.html', 'utf8'); // TODO: async
-const template = Handlebars.compile(templateSource);
-
 const program = new Command();
 program.version('0.0.0');
 
@@ -33,7 +30,7 @@ function eventItemsToInvoices(events) {
   return invoices;
 }
 
-async function fetchFeedUrl() {
+async function fetchFeedUrl(template) {
   // TODO: implement pageSize
   // TODO: implement afterEventId
 
@@ -61,7 +58,15 @@ async function fetchFeedUrl() {
 }
 
 async function main() {
-  fetchFeedUrl();
+  const templateSource = await new Promise((resolve, reject) => fs.readFile('./invoice-template.html', 'utf8', (err, data) => {
+    if (err) {
+      reject(err);
+    } else {
+      resolve(data);
+    }
+  }));
+  const template = Handlebars.compile(templateSource);
+  fetchFeedUrl(template);
 }
 
 main();
