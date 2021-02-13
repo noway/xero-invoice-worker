@@ -81,7 +81,7 @@ async function syncInvoicesToFilesystem(invoiceDir, template, invoices) {
   await Promise.all(invoicePutPromises);
 }
 
-async function getLastEventId() {
+async function getProgress() {
   try {
     const contents = await new Promise((resolve, reject) => fs.readFile('./state.json', 'utf8', (err, data) => {
       if (err) {
@@ -91,17 +91,17 @@ async function getLastEventId() {
       }
     }));
     const parsed = JSON.parse(contents);
-    return parsed.lastEventId;
+    return [parsed.lastEventId, parsed.invoices];
   } catch (error) {
     if (error.code === 'ENOENT') {
-      return 0;
+      return [0, []];
     }
     throw error;
   }
 }
 
-async function setLastEventId(lastEventId) {
-  const serialized = JSON.stringify({ lastEventId }, null, 2);
+async function persistProgress(lastEventId, invoices) {
+  const serialized = JSON.stringify({ lastEventId, invoices }, null, 2);
   await new Promise((resolve, reject) => fs.writeFile('./state.json', serialized, (err) => {
     if (err) {
       reject();
@@ -126,7 +126,7 @@ async function fetchFeedUrl(options, template, lastEventId, invoices) {
   const updatedInvoices = eventItemsToInvoices(sortedEventItems, invoices);
 
   await syncInvoicesToFilesystem(options.invoiceDir, template, invoices);
-  await setLastEventId(newLastEventId);
+  await persistProgress(newLastEventId, invoices);
 
   console.log('data', data);
   return [newLastEventId, updatedInvoices];
@@ -140,8 +140,7 @@ async function main() {
   console.log(`  --feed-url ${options.feedUrl}`);
   console.log(`  --invoice-dir ${options.invoiceDir}`);
 
-  let lastEventId = await getLastEventId();
-  let invoices = [];
+  let [lastEventId, invoices] = await getProgress();
 
   const templateSource = await new Promise((resolve, reject) => fs.readFile('./invoice-template.html', 'utf8', (err, data) => {
     if (err) {
