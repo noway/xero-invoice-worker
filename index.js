@@ -59,6 +59,7 @@ async function syncInvoicesToFilesystem(invoiceDir, template, invoices) {
   }
   await Promise.all(deletionPromises);
 
+  // overwrites all of the invoices at once. not eficient.
   const nonDeletedInvoices = invoices.filter((invoice) => invoice.status !== 'DELETED');
   for (let i = 0; i < nonDeletedInvoices.length; i += 1) {
     const invoice = nonDeletedInvoices[i];
