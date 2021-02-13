@@ -19,14 +19,19 @@ if (options.feedUrl) console.log(`- ${options.feedUrl}`);
 if (options.invoiceDir) console.log(`- ${options.invoiceDir}`);
 
 function eventItemsToInvoices(events) {
-  // TODO: sort events by createdAt or by id
+  const sortedEvents = [...events].sort((a, b) => a.id - b.id);
   const invoices = [];
-  for (let i = 0; i < events.length; i += 1) {
-    const event = events[i];
+  for (let i = 0; i < sortedEvents.length; i += 1) {
+    const event = sortedEvents[i];
     if (event.type === 'INVOICE_CREATED') {
       invoices.push(event.content);
+    } else if (event.type === 'INVOICE_UPDATED') {
+      const index = invoices.findIndex((invoice) => invoice.invoiceId === event.content.invoiceId);
+      Object.assign(invoices[index], event.content);
+    } else if (event.type === 'INVOICE_DELETED') {
+      const index = invoices.findIndex((invoice) => invoice.invoiceId === event.content.invoiceId);
+      invoices.splice(index, 1);
     }
-    // TODO: other event types
   }
   return invoices;
 }
