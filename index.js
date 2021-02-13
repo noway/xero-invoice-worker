@@ -71,7 +71,7 @@ async function syncInvoicesToFilesystem(invoiceDir, template, invoices) {
 
 async function getProgress() {
   try {
-    const contents = await readFile('./state.json', 'utf8');
+    const contents = await readFile(path.resolve(__dirname, './state.json'), 'utf8');
     const parsed = JSON.parse(contents);
     return [parsed.lastEventId, parsed.invoices];
   } catch (error) {
@@ -84,7 +84,7 @@ async function getProgress() {
 
 async function persistProgress(lastEventId, invoices) {
   const serialized = JSON.stringify({ lastEventId, invoices }, null, 2);
-  await writeFile('./state.json', serialized);
+  await writeFile(path.resolve(__dirname, './state.json'), serialized);
 }
 
 async function fetchFeedUrl(options, template, lastEventId, invoices) {
@@ -120,7 +120,7 @@ async function main() {
   log(`  --invoice-dir ${options.invoiceDir}\n`);
 
   let [lastEventId, invoices] = await getProgress();
-  const templateSource = await readFile('./invoice-template.html', 'utf8');
+  const templateSource = await readFile(path.resolve(__dirname, './invoice-template.html'), 'utf8');
   const template = Handlebars.compile(templateSource);
 
   do {
