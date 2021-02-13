@@ -1,31 +1,93 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <mate charest="utf-8" />
-    <title>{{invoiceNumber}}</title>
+    <meta charest="utf-8" />
+    <title>{{invoice.invoiceNumber}}</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap" rel="stylesheet">  
+    <style>
+      h1, h2, h3, h4, h5, h6 {
+        padding: 0;
+        margin: 0;
+      }
+      body {
+        font-family: 'DM Sans', sans-serif;
+        padding: 0;
+        margin: 0;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+      .Header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin: 4rem 0;
+      }
+      .Fields {
+        margin: 4rem 0;
+      }
+      .Fields-th {
+        padding-right: 1rem;
+      }
+      .Line-items {
+        border-collapse: collapse;
+        margin: 4rem 0;
+      }
+      .Line-items .Line-item-td-cell, .Line-items th {
+        border: 1px solid black;
+        padding: 5px 10px;
+      }
+      .Line-items .Invoice-total-cell {
+        padding: 5px 10px;
+      }
+      .Line-items .Invoice-total-total {
+        text-align: right;
+      }
+    </style>
   </head>
   <body>
-    <h1>{{invoiceNumber}}</h1>
-    <h2>Status: {{status}}</h2>
-    <h2>Due date: {{dueDateUtc}}</h2>
-    <h2>Created date: {{createdDateUtc}}</h2>
-    <h2>Updated date: {{updatedDateUtc}}</h2>
-    <h3>Line items</h3>
-    <table>
-      <th>
-        <td>Description</td>
-        <td>Quantity</td>
-        <td>UnitCost</td>
-        <td>LineItemTotalCost</td>
-      </th>
-      {{#each lineItems}}
+    <div class="Header">
+      <h1 class="Header-title">Invoice</h1>
+      <h2 class="Header-status">Status: {{invoice.status}}</h2>
+    </div>
+    <table class="Fields">
       <tr>
-        <td>{{this.description}}</td>
-        <td>{{this.quantity}}</td>
-        <td>{{this.unitCost}}</td>
-        <td>{{this.lineItemTotalCost}}</td>
+        <td class="Fields-th">Invoice number</td>
+        <td>{{invoice.invoiceNumber}}</td>
+      </tr>
+      <tr>
+        <td class="Fields-th">Created date</td>
+        <td>{{dateFormat invoice.createdDateUtc}}</td>
+      </tr>
+      <tr>
+        <td class="Fields-th">Updated date</td>
+        <td>{{dateFormat invoice.updatedDateUtc}}</td>
+      </tr>
+      <tr>
+        <td class="Fields-th">Due date</td>
+        <td>{{dateFormat invoice.dueDateUtc}}</td>
+      </tr>
+    </table>
+    
+    <table class="Line-items">
+      <thead>
+        <th>Description</th>
+        <th>Quantity</th>
+        <th>Unit cost</th>
+        <th>Cost</th>
+      </thead>
+      {{#each invoice.lineItems}}
+      <tr>
+        <td class="Line-item-td-cell">{{this.description}}</td>
+        <td class="Line-item-td-cell">{{this.quantity}}</td>
+        <td class="Line-item-td-cell">{{this.unitCost}}</td>
+        <td class="Line-item-td-cell">{{this.lineItemTotalCost}}</td>
       </tr>
       {{/each}}
+      <tr>
+        <td class="Invoice-total-cell Invoice-total-total" colspan="3">Total</td>
+        <td class="Invoice-total-cell">{{invoiceTotalCost}}</td>
+      </tr>
     </table>
   </body>
 </html>

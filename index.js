@@ -4,6 +4,7 @@
 
 const path = require('path');
 const fetch = require('node-fetch');
+const moment = require('moment');
 const Handlebars = require('handlebars');
 const { Command } = require('commander');
 const {
@@ -83,7 +84,10 @@ class InvoiceTracker {
     const nonDeletedInvoices = invoices.filter((invoice) => invoice.status !== 'DELETED');
     for (let i = 0; i < nonDeletedInvoices.length; i += 1) {
       const invoice = nonDeletedInvoices[i];
-      const html = this.template(invoice);
+      const invoiceTotalCost = invoice.lineItems.reduce(
+        (acc, cur) => acc + cur.lineItemTotalCost, 0,
+      );
+      const html = this.template({ invoice, invoiceTotalCost });
       const pdfOptions = { format: 'Letter' };
       const pdfPath = path.resolve(this.options.invoiceDir, `./${invoice.invoiceNumber}.pdf`);
       invoicePutPromises.push(writePdf(html, pdfOptions, pdfPath));
@@ -131,6 +135,7 @@ async function main() {
   program.parse(process.argv);
   const options = program.opts();
 
+  Handlebars.registerHelper('dateFormat', (date) => moment(date).format('lll'));
   const templateSource = await readFile(path.resolve(__dirname, './invoice-template.html'), 'utf8');
   const template = Handlebars.compile(templateSource);
 
