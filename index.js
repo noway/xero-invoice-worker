@@ -132,12 +132,12 @@ async function main() {
   program.parse(process.argv);
   const options = program.opts();
 
+  const templateSource = await readFile(path.resolve(__dirname, './invoice-template.html'), 'utf8');
+  const template = Handlebars.compile(templateSource);
+
   log('Current settings: ');
   log(`  --feed-url ${options.feedUrl}`);
   log(`  --invoice-dir ${options.invoiceDir}\n`);
-
-  const templateSource = await readFile(path.resolve(__dirname, './invoice-template.html'), 'utf8');
-  const template = Handlebars.compile(templateSource);
 
   const invoiceTracker = new InvoiceTracker(options, template);
   await invoiceTracker.startLoop();
