@@ -11,13 +11,8 @@ const POLLING_INTERVAL = 7000;
 const program = new Command();
 program.version('0.0.0');
 program
-  .option('-f, --feed-url <http url>', 'HTTP url for the JSON event feed')
-  .option('-i, --invoice-dir <directory path>', 'Folder where the PDF files are stored');
-program.parse(process.argv);
-
-const options = program.opts();
-if (options.feedUrl) console.log(`- ${options.feedUrl}`);
-if (options.invoiceDir) console.log(`- ${options.invoiceDir}`);
+  .requiredOption('-f, --feed-url <http url>', 'HTTP url for the JSON event feed')
+  .requiredOption('-i, --invoice-dir <directory path>', 'Folder where the PDF files are stored');
 
 function eventItemsToInvoices(events, previousInvoices) {
   // TODO: take in sorted events?
@@ -39,7 +34,7 @@ function eventItemsToInvoices(events, previousInvoices) {
 }
 module.exports.eventItemsToInvoices = eventItemsToInvoices;
 
-async function syncInvoicesToFilesystem(template, invoices) {
+async function syncInvoicesToFilesystem(invoiceDir, template, invoices) {
   const deletionPromises = [];
   const invoicePutPromises = [];
 
@@ -49,7 +44,7 @@ async function syncInvoicesToFilesystem(template, invoices) {
   console.log('deletedInvoices', deletedInvoices);
   for (let i = 0; i < deletedInvoices.length; i += 1) {
     const deleteInvoiceNumber = deletedInvoices[i].invoiceNumber;
-    const pdfPath = path.resolve(options.invoiceDir, `./${deleteInvoiceNumber}.pdf`);
+    const pdfPath = path.resolve(invoiceDir, `./${deleteInvoiceNumber}.pdf`);
     deletionPromises.push(
       new Promise((resolve, reject) => fs.unlink(pdfPath, (err) => {
         if (err) {
@@ -71,7 +66,7 @@ async function syncInvoicesToFilesystem(template, invoices) {
     const invoice = nonDeletedInvoices[i];
     const html = template(invoice);
     const pdfOptions = { format: 'Letter' };
-    const pdfPath = path.resolve(options.invoiceDir, `./${invoice.invoiceNumber}.pdf`);
+    const pdfPath = path.resolve(invoiceDir, `./${invoice.invoiceNumber}.pdf`);
 
     invoicePutPromises.push(
       new Promise((resolve, reject) => pdf.create(html, pdfOptions)
@@ -117,7 +112,7 @@ async function setLastEventId(lastEventId) {
   }));
 }
 
-async function fetchFeedUrl(template, lastEventId, invoices) {
+async function fetchFeedUrl(options, template, lastEventId, invoices) {
   // TODO: implement pageSize
 
   const url = new URL(options.feedUrl);
@@ -132,13 +127,20 @@ async function fetchFeedUrl(template, lastEventId, invoices) {
   const updatedInvoices = eventItemsToInvoices(data.items, invoices);
 
   await setLastEventId(newLastEventId);
-  await syncInvoicesToFilesystem(template, invoices);
+  await syncInvoicesToFilesystem(options.invoiceDir, template, invoices);
 
   console.log('data', data);
   return [newLastEventId, updatedInvoices];
 }
 
 async function main() {
+  program.parse(process.argv);
+  const options = program.opts();
+
+  console.log('Settings: ');
+  console.log(`  --feed-url ${options.feedUrl}`);
+  console.log(`  --invoice-dir ${options.invoiceDir}`);
+
   let lastEventId = await getLastEventId();
   let invoices = [];
 
@@ -153,7 +155,7 @@ async function main() {
   const template = Handlebars.compile(templateSource);
 
   do {
-    [lastEventId, invoices] = await fetchFeedUrl(template, lastEventId, invoices);
+    [lastEventId, invoices] = await fetchFeedUrl(options, template, lastEventId, invoices);
     await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL));
   }
   while (true); // until Ctrl-C is pressed
