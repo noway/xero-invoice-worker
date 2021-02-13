@@ -111,23 +111,26 @@ async function persistProgress(lastEventId, invoices) {
 
 async function fetchFeedUrl(options, template, lastEventId, invoices) {
   // TODO: implement pageSize
+  try {
+    const url = new URL(options.feedUrl);
+    const searchParams = new URLSearchParams();
+    searchParams.set('afterEventId', lastEventId);
+    url.search = searchParams.toString();
+    const res = await fetch(url.href);
+    const data = await res.json();
 
-  const url = new URL(options.feedUrl);
-  const searchParams = new URLSearchParams();
-  searchParams.set('afterEventId', lastEventId);
-  url.search = searchParams.toString();
-  const res = await fetch(url.href);
-  const data = await res.json();
+    log(`${data.items.length} events fetched`);
 
-  log(`${data.items.length} events fetched`);
+    const sortedEventItems = [...data.items].sort((a, b) => a.id - b.id);
+    const newLastEventId = sortedEventItems[sortedEventItems.length - 1].id;
+    const updatedInvoices = eventItemsToInvoices(sortedEventItems, invoices);
 
-  const sortedEventItems = [...data.items].sort((a, b) => a.id - b.id);
-  const newLastEventId = sortedEventItems[sortedEventItems.length - 1].id;
-  const updatedInvoices = eventItemsToInvoices(sortedEventItems, invoices);
-
-  await syncInvoicesToFilesystem(options.invoiceDir, template, invoices);
-
-  return [newLastEventId, updatedInvoices];
+    await syncInvoicesToFilesystem(options.invoiceDir, template, invoices);
+    return [newLastEventId, updatedInvoices];
+  } catch (error) {
+    log(`Error: ${error.message} while fetching feed url. Retrying.`);
+    return [lastEventId, invoices];
+  }
 }
 
 async function main() {
