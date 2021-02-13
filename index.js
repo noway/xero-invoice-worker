@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable no-constant-condition */
 /* eslint-disable no-await-in-loop */
 const fs = require('fs');
 const path = require('path');
@@ -13,6 +15,13 @@ program.version('0.0.0');
 program
   .requiredOption('-f, --feed-url <http url>', 'HTTP url for the JSON event feed')
   .requiredOption('-i, --invoice-dir <directory path>', 'Folder where the PDF files are stored');
+
+function listInvoices(invoices) {
+  return invoices.map(({ invoiceNumber }) => invoiceNumber).join(', ');
+}
+function log(...args) {
+  console.log(...args);
+}
 
 function eventItemsToInvoices(sortedEventItems, previousInvoices) {
   const invoices = [...previousInvoices];
@@ -39,7 +48,6 @@ async function syncInvoicesToFilesystem(invoiceDir, template, invoices) {
   // tries to delete all of the invoices every time... not ideal
   // might delete something which is has been created by user?
   const deletedInvoices = invoices.filter((invoice) => invoice.status === 'DELETED');
-  console.log('deletedInvoices', deletedInvoices);
   for (let i = 0; i < deletedInvoices.length; i += 1) {
     const deleteInvoiceNumber = deletedInvoices[i].invoiceNumber;
     const pdfPath = path.resolve(invoiceDir, `./${deleteInvoiceNumber}.pdf`);
@@ -58,6 +66,7 @@ async function syncInvoicesToFilesystem(invoiceDir, template, invoices) {
     );
   }
   await Promise.all(deletionPromises);
+  log('Deleted invoices:', listInvoices(deletedInvoices));
 
   // overwrites all of the invoices at once. not eficient.
   const nonDeletedInvoices = invoices.filter((invoice) => invoice.status !== 'DELETED');
@@ -79,6 +88,7 @@ async function syncInvoicesToFilesystem(invoiceDir, template, invoices) {
     );
   }
   await Promise.all(invoicePutPromises);
+  log('Wrote invoices:', listInvoices(nonDeletedInvoices));
 }
 
 async function getProgress() {
@@ -121,14 +131,14 @@ async function fetchFeedUrl(options, template, lastEventId, invoices) {
   const res = await fetch(url.href);
   const data = await res.json();
 
+  log(`${data.items.length} events fetched`);
+
   const sortedEventItems = [...data.items].sort((a, b) => a.id - b.id);
   const newLastEventId = sortedEventItems[sortedEventItems.length - 1].id;
   const updatedInvoices = eventItemsToInvoices(sortedEventItems, invoices);
 
   await syncInvoicesToFilesystem(options.invoiceDir, template, invoices);
-  await persistProgress(newLastEventId, invoices);
 
-  console.log('data', data);
   return [newLastEventId, updatedInvoices];
 }
 
@@ -136,9 +146,9 @@ async function main() {
   program.parse(process.argv);
   const options = program.opts();
 
-  console.log('Settings: ');
-  console.log(`  --feed-url ${options.feedUrl}`);
-  console.log(`  --invoice-dir ${options.invoiceDir}`);
+  log('Settings: ');
+  log(`  --feed-url ${options.feedUrl}`);
+  log(`  --invoice-dir ${options.invoiceDir}\n`);
 
   let [lastEventId, invoices] = await getProgress();
 
@@ -154,6 +164,8 @@ async function main() {
 
   do {
     [lastEventId, invoices] = await fetchFeedUrl(options, template, lastEventId, invoices);
+    await persistProgress(lastEventId, invoices);
+    log('Progress persisted\n');
     await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL));
   }
   while (true); // until Ctrl-C is pressed
