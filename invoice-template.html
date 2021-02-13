@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <mate charest="utf-8" />
+    <title>{{invoiceNumber}}</title>
+  </head>
+  <body>
+    <h1>{{invoiceNumber}}</h1>
+    <h2>Status: {{status}}</h2>
+    <h2>Due date: {{dueDateUtc}}</h2>
+    <h2>Created date: {{createdDateUtc}}</h2>
+    <h2>Updated date: {{updatedDateUtc}}</h2>
+    <h3>Line items</h3>
+    <table>
+      <th>
+        <td>Description</td>
+        <td>Quantity</td>
+        <td>UnitCost</td>
+        <td>LineItemTotalCost</td>
+      </th>
+      {{#each lineItems}}
+      <tr>
+        <td>{{this.description}}</td>
+        <td>{{this.quantity}}</td>
+        <td>{{this.unitCost}}</td>
+        <td>{{this.lineItemTotalCost}}</td>
+      </tr>
+      {{/each}}
+    </table>
+  </body>
+</html>
