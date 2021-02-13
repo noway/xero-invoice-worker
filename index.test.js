@@ -234,7 +234,7 @@ const invoicesEventsCreateMultiple = {
 /** eventItemsToInvoices */
 
 // should create an invoice
-assert.deepEqual(eventItemsToInvoices(invoicesEventsOnlyCreate.items), [[], [{
+assert.deepEqual(eventItemsToInvoices(invoicesEventsOnlyCreate.items, []), [{
   invoiceId: '97f0821d-3517-471a-95f2-f00da84ec56e',
   invoiceNumber: 'INV-001',
   lineItems: [
@@ -250,10 +250,10 @@ assert.deepEqual(eventItemsToInvoices(invoicesEventsOnlyCreate.items), [[], [{
   dueDateUtc: '2020-04-30T10:00:00.000Z',
   createdDateUtc: '2020-04-19T10:00:00.000Z',
   updatedDateUtc: '2020-04-19T10:00:00.000Z',
-}]]);
+}]);
 
 // should create and then update invoice
-assert.deepEqual(eventItemsToInvoices(invoicesEventsCreateThenUpdate.items), [[], [{
+assert.deepEqual(eventItemsToInvoices(invoicesEventsCreateThenUpdate.items, []), [{
   invoiceId: '97f0821d-3517-471a-95f2-f00da84ec56e',
   invoiceNumber: 'INV-001',
   lineItems: [
@@ -269,13 +269,29 @@ assert.deepEqual(eventItemsToInvoices(invoicesEventsCreateThenUpdate.items), [[]
   dueDateUtc: '2020-05-30T10:00:00.000Z',
   createdDateUtc: '2020-04-19T10:00:00.000Z',
   updatedDateUtc: '2020-05-19T10:00:00.000Z',
-}]]);
+}]);
 
 // should create and then delete invoice
-assert.deepEqual(eventItemsToInvoices(invoicesEventsCreateThenDelete.items), [['INV-001'], []]);
+assert.deepEqual(eventItemsToInvoices(invoicesEventsCreateThenDelete.items, []), [{
+  invoiceId: '97f0821d-3517-471a-95f2-f00da84ec56e',
+  invoiceNumber: 'INV-001',
+  lineItems: [
+    {
+      lineItemId: '2686350b-2656-48a0-912d-763c06ef5c04',
+      description: 'Supplies',
+      quantity: 2,
+      unitCost: 10.15,
+      lineItemTotalCost: 20.3,
+    },
+  ],
+  status: 'DELETED',
+  dueDateUtc: '2020-04-30T10:00:00.000Z',
+  createdDateUtc: '2020-04-19T10:00:00.000Z',
+  updatedDateUtc: '2020-04-19T10:00:00.000Z',
+}]);
 
 // should sort events before constructing invoices
-assert.deepEqual(eventItemsToInvoices(invoicesEventsShuffled.items), [[], [{
+assert.deepEqual(eventItemsToInvoices(invoicesEventsShuffled.items, []), [{
   invoiceId: '97f0821d-3517-471a-95f2-f00da84ec56e',
   invoiceNumber: 'INV-001',
   lineItems: [
@@ -291,10 +307,10 @@ assert.deepEqual(eventItemsToInvoices(invoicesEventsShuffled.items), [[], [{
   dueDateUtc: '2020-06-30T10:00:00.000Z',
   createdDateUtc: '2020-04-19T10:00:00.000Z',
   updatedDateUtc: '2020-06-19T10:00:00.000Z',
-}]]);
+}]);
 
 // should create multiple invoices
-assert.deepEqual(eventItemsToInvoices(invoicesEventsCreateMultiple.items), [[], [
+assert.deepEqual(eventItemsToInvoices(invoicesEventsCreateMultiple.items, []), [
   {
     invoiceId: '97f0821d-3517-471a-95f2-f00da84ec56e',
     invoiceNumber: 'INV-001',
@@ -329,4 +345,4 @@ assert.deepEqual(eventItemsToInvoices(invoicesEventsCreateMultiple.items), [[], 
     createdDateUtc: '2020-05-19T10:00:00.000Z',
     updatedDateUtc: '2020-05-19T10:00:00.000Z',
   },
-]]);
+]);

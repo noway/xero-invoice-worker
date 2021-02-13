@@ -8,10 +8,9 @@ app.get('/invoices/events', (req, res) => {
   const afterEventId = parseInt(req.query.afterEventId ?? '0', 10);
   let data;
 
-  const invoiceId = '97f0821d-3517-471a-95f2-f00da84ec56e';
-  const lineItemId = '2686350b-2656-48a0-912d-763c06ef5c04';
-
   const invoiceNumber = Math.ceil((afterEventId + 1) / 4);
+  const invoiceId = `97f0821d-3517-471a-95f2-${`${invoiceNumber}`.padStart(12, '0')}`;
+  const lineItemId = `2686350b-2656-48a0-912d-${`${invoiceNumber}`.padStart(12, '0')}`;
 
   if (afterEventId % 4 === 0) {
     // create

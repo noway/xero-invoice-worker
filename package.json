@@ -19,7 +19,8 @@
     "express": "^4.17.1",
     "handlebars": "^4.7.6",
     "html-pdf": "^2.2.0",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "url": "^0.11.0"
   },
   "devDependencies": {
     "eslint": "^7.20.0",
