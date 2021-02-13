@@ -1,19 +1,18 @@
 /* eslint-disable no-await-in-loop */
-const { Command } = require('commander');
-const fetch = require('node-fetch');
 const fs = require('fs');
+const path = require('path');
+const fetch = require('node-fetch');
 const pdf = require('html-pdf');
 const Handlebars = require('handlebars');
-const path = require('path');
+const { Command } = require('commander');
 
 const POLLING_INTERVAL = 7000;
+
 const program = new Command();
 program.version('0.0.0');
-
 program
   .option('-f, --feed-url <http url>', 'HTTP url for the JSON event feed')
   .option('-i, --invoice-dir <directory path>', 'Folder where the PDF files are stored');
-
 program.parse(process.argv);
 
 const options = program.opts();
