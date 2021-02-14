@@ -7,7 +7,7 @@ app.get('/invoices/events', (req, res) => {
   const afterEventId = parseInt(req.query.afterEventId ?? '0', 10);
   let data;
 
-  const invoiceNumber = Math.ceil((afterEventId + 1) / 8);
+  const invoiceNumber = Math.ceil((afterEventId + 1) / 8) * 2 - 1;
   const invoiceId1 = `97f0821d-3517-471a-0001-${`${invoiceNumber}`.padStart(12, '0')}`;
   const invoiceId2 = `97f0821d-3517-471a-0002-${`${invoiceNumber}`.padStart(12, '0')}`;
   const lineItemId1 = `2686350b-2656-48a0-0001-${`${invoiceNumber}`.padStart(12, '0')}`;
@@ -180,7 +180,7 @@ app.get('/invoices/events', (req, res) => {
           id: afterEventId + 2,
           type: 'INVOICE_UPDATED',
           content: {
-            invoiceId: invoiceId1,
+            invoiceId: invoiceId2,
             invoiceNumber: `INV-${`${invoiceNumber + 1}`.padStart(3, '0')}`,
             lineItems: [
               {
