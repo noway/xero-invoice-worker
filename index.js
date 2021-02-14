@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 /* eslint-disable no-console */
 /* eslint-disable no-constant-condition */
 /* eslint-disable no-await-in-loop */
@@ -47,13 +48,18 @@ class InvoiceTracker {
     const invoices = [...previousInvoices];
     for (let i = 0; i < sortedEventItems.length; i += 1) {
       const item = sortedEventItems[i];
-      if (item.type === 'INVOICE_CREATED') {
-        invoices.push(item.content);
-      } else if (item.type === 'INVOICE_UPDATED') {
-        const index = invoices.findIndex((invoice) => invoice.invoiceId === item.content.invoiceId);
-        invoices[index] = { ...invoices[index], ...item.content };
-      } else if (item.type === 'INVOICE_DELETED') {
-        const index = invoices.findIndex((invoice) => invoice.invoiceId === item.content.invoiceId);
+      const { type, content } = item;
+      if (!type || !content) {
+        // malformed event
+        continue;
+      }
+      if (type === 'INVOICE_CREATED') {
+        invoices.push(content);
+      } else if (type === 'INVOICE_UPDATED') {
+        const index = invoices.findIndex((invoice) => invoice.invoiceId === content.invoiceId);
+        invoices[index] = { ...invoices[index], ...content };
+      } else if (type === 'INVOICE_DELETED') {
+        const index = invoices.findIndex((invoice) => invoice.invoiceId === content.invoiceId);
         invoices[index] = { ...invoices[index], status: 'DELETED' };
       } else {
         // ignore
