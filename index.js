@@ -63,8 +63,6 @@ class InvoiceTracker {
   }
 
   async syncInvoicesToFilesystem(invoices) {
-    // tries to delete all of the invoices every time... not ideal
-    // might delete something which is has been created by user?
     const deletionPromises = [];
     const deletedInvoices = invoices.filter((invoice) => invoice.status === 'DELETED');
     for (let i = 0; i < deletedInvoices.length; i += 1) {
@@ -79,7 +77,6 @@ class InvoiceTracker {
     await Promise.all(deletionPromises);
     log('Deleted invoices:', listInvoices(deletedInvoices));
 
-    // overwrites all of the invoices at once. not eficient.
     const invoicePutPromises = [];
     const nonDeletedInvoices = invoices.filter((invoice) => invoice.status !== 'DELETED');
     for (let i = 0; i < nonDeletedInvoices.length; i += 1) {
