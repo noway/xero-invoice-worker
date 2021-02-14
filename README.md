@@ -1,5 +1,10 @@
 # Invoice Tracker
 
+## Installation
+```bash
+npm install
+```
+
 ## Usage
 ```bash
 npm start -- --feed-url <http url> --invoice-dir <directory path>
