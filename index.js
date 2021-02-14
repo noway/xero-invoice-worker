@@ -25,9 +25,9 @@ class InvoiceTracker {
     this.template = template;
   }
 
-  static async getProgress() {
+  async getProgress() {
     try {
-      const contents = await readFile(path.resolve(__dirname, './state.json'), 'utf8');
+      const contents = await readFile(path.resolve(this.options.invoiceDir, './state.json'), 'utf8');
       const parsed = JSON.parse(contents);
       return [parsed.lastEventId, parsed.invoices];
     } catch (error) {
@@ -38,9 +38,9 @@ class InvoiceTracker {
     }
   }
 
-  static async persistProgress(lastEventId, invoices) {
+  async persistProgress(lastEventId, invoices) {
     const serialized = JSON.stringify({ lastEventId, invoices }, null, 2);
-    await writeFile(path.resolve(__dirname, './state.json'), serialized);
+    await writeFile(path.resolve(this.options.invoiceDir, './state.json'), serialized);
   }
 
   static eventItemsToInvoices(sortedEventItems, previousInvoices) {
@@ -117,10 +117,10 @@ class InvoiceTracker {
   }
 
   async startLoop() {
-    let [lastEventId, invoices] = await InvoiceTracker.getProgress();
+    let [lastEventId, invoices] = await this.getProgress();
     do {
       [lastEventId, invoices] = await this.fetchFeedUrl(lastEventId, invoices);
-      await InvoiceTracker.persistProgress(lastEventId, invoices);
+      await this.persistProgress(lastEventId, invoices);
       log('Progress persisted\n');
       await wait(POLLING_INTERVAL);
     }
