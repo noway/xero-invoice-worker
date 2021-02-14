@@ -4,6 +4,8 @@
   "description": "Technical Exercise - Invoice Worker for Xero",
   "main": "index.js",
   "scripts": {
+    "test-server": "node test-server.js",
+    "start": "node index.js",
     "test": "node index.test.js"
   },
   "keywords": [
